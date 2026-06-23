@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纽约城市智慧交通控制中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F8FC;
+    --panel:#FFFFFF;
+    --panel-2:#EEF4FB;
+    --border:#D8E3F0;
+    --blue:#1659C7;
+    --blue-deep:#0D3B7A;
+    --blue-pale:#E7F0FC;
+    --amber:#C97A1E;
+    --rose:#C73854;
+    --violet:#5E4FCB;
+    --text:#16263D;
+    --text-dim:#5B7088;
+    --text-mute:#93A5BB;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; height:100%;}
+  body{
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size:34px 34px;
+    background-position:-1px -1px;
+    min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+  .disp{font-family:'Space Grotesk', sans-serif;}
+
+  /* ===== Header ===== */
+  header{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    padding:16px 28px; border-bottom:2px solid var(--blue);
+    background:var(--panel); position:relative;
+  }
+  .corner{position:absolute; width:14px; height:14px; border-color:var(--blue); opacity:0.55;}
+  .corner.tl{top:6px; left:6px; border-top:2px solid; border-left:2px solid;}
+  .corner.tr{top:6px; right:6px; border-top:2px solid; border-right:2px solid;}
+  .brand{display:flex; align-items:center; gap:12px; min-width:0;}
+  .brand-mark{
+    width:40px; height:40px; border-radius:8px; flex-shrink:0;
+    background:var(--blue); border:1px solid var(--blue-deep);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk'; font-weight:700; color:#fff; font-size:17px;
+  }
+  .brand-text{min-width:0;}
+  .brand-text h1{font-family:'Space Grotesk'; font-size:17px; font-weight:700; letter-spacing:0.2px; color:var(--blue-deep); white-space:nowrap;}
+  .brand-text p{font-size:11.5px; color:var(--text-dim); margin-top:1px; white-space:nowrap;}
+  .status-bar{display:flex; gap:20px; align-items:center; flex-wrap:wrap;}
+  .status-item{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-dim); white-space:nowrap;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--blue); flex-shrink:0; animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+  .status-item b{color:var(--text); font-family:'JetBrains Mono'; font-weight:600;}
+  #clock{font-family:'JetBrains Mono'; font-size:12.5px; color:var(--text-dim); min-width:150px; text-align:right; white-space:nowrap;}
+  @media (max-width:760px){
+    header{justify-content:center; text-align:center; padding:16px 18px;}
+    .brand{width:100%; justify-content:center;}
+    .status-bar{width:100%; justify-content:center; gap:14px 16px;}
+    #clock{width:100%; text-align:center; min-width:0;}
+  }
+
+  /* ===== Layout ===== */
+  .layout{display:grid; grid-template-columns:1.65fr 1fr; gap:18px; padding:20px 28px 40px; max-width:1440px; margin:0 auto;}
+  @media (max-width:980px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:20px; position:relative; box-shadow:0 1px 3px rgba(22,38,61,0.05);}
+  .panel h2{font-family:'Space Grotesk'; font-size:14px; font-weight:700; letter-spacing:0.2px; color:var(--blue-deep); margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+  .panel h2 .tag{font-size:10px; font-weight:600; color:var(--blue); background:var(--blue-pale); padding:2px 7px; border-radius:5px; font-family:'JetBrains Mono'; letter-spacing:0.4px;}
+
+  /* ===== Connection settings ===== */
+  .conn-bar{
+    display:flex; gap:8px; align-items:center; margin-bottom:14px; padding:10px 12px;
+    background:var(--panel-2); border:1px dashed var(--border); border-radius:9px; font-size:11.5px;
+  }
+  .conn-bar input{
+    flex:1; background:#fff; border:1px solid var(--border); border-radius:6px; padding:6px 10px;
+    font-family:'JetBrains Mono'; font-size:11.5px; color:var(--text); outline:none;
+  }
+  .conn-bar input:focus{border-color:var(--blue);}
+  .conn-bar button{
+    background:var(--blue-deep); color:#fff; border:none; border-radius:6px; padding:6px 12px;
+    font-size:11px; font-weight:600; cursor:pointer; font-family:'Inter';
+  }
+  .conn-status{display:flex; align-items:center; gap:5px; font-family:'JetBrains Mono'; white-space:nowrap;}
+  .conn-status .led{width:7px; height:7px; border-radius:50%; background:var(--text-mute);}
+  .conn-status.live .led{background:#2BAA6E; box-shadow:0 0 5px #2BAA6E;}
+  .conn-status.off .led{background:var(--text-mute);}
+
+  /* ===== Query console ===== */
+  .console-input{display:flex; gap:10px; margin-bottom:14px;}
+  .console-input .prompt{
+    flex:1; display:flex; align-items:center; gap:10px;
+    background:var(--panel-2); border:1px solid var(--border); border-radius:9px; padding:0 14px;
+  }
+  .console-input .prompt span{color:var(--blue); font-family:'JetBrains Mono'; font-size:14px;}
+  .console-input input{
+    flex:1; background:transparent; border:none; outline:none; color:var(--text);
+    font-family:'JetBrains Mono'; font-size:13.5px; padding:13px 0;
+  }
+  .console-input input::placeholder{color:var(--text-mute);}
+  .console-input button{
+    background:var(--blue); color:#fff; border:none; border-radius:9px;
+    padding:0 22px; font-family:'Space Grotesk'; font-weight:600; font-size:13px; cursor:pointer;
+    transition:opacity .15s;
+  }
+  .console-input button:hover{opacity:0.88;}
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .chip{
+    font-size:11.5px; color:var(--blue-deep); border:1px solid var(--border); background:var(--blue-pale);
+    padding:6px 12px; border-radius:20px; cursor:pointer; transition:all .15s; font-family:'Inter';
+  }
+  .chip:hover{border-color:var(--blue); background:#fff;}
+
+  .feed{display:flex; flex-direction:column; gap:14px; max-height:640px; overflow-y:auto; padding-right:4px;}
+  .feed::-webkit-scrollbar{width:6px;}
+  .feed::-webkit-scrollbar-thumb{background:var(--border); border-radius:3px;}
+
+  .msg-user{
+    align-self:flex-end; max-width:78%; background:var(--blue-deep); color:#fff;
+    border-radius:10px 10px 2px 10px; padding:10px 14px; font-size:13px;
+  }
+  .card{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:18px;
+    border-left:3px solid var(--blue); animation:rise .35s ease;
+  }
+  @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .card.t-route{border-left-color:var(--blue);}
+  .card.t-status{border-left-color:var(--amber);}
+  .card.t-signal{border-left-color:var(--rose);}
+  .card.t-visual{border-left-color:var(--violet);}
+  .card.t-chat{border-left-color:var(--text-mute);}
+  .card.t-live{border-left-color:#2BAA6E;}
+  .card.t-error{border-left-color:var(--rose); background:#FBEEF0;}
+  .card-title{display:flex; align-items:center; gap:8px; font-family:'Space Grotesk'; font-weight:700; font-size:14px; color:var(--text); margin-bottom:4px;}
+  .card-sub{font-size:11.5px; color:var(--text-mute); font-family:'JetBrains Mono'; margin-bottom:12px;}
+  .card p.body{font-size:13px; line-height:1.7; color:var(--text-dim); margin-bottom:10px;}
+  .card .md{font-size:13px; line-height:1.75; color:var(--text-dim);}
+  .card .md strong{color:var(--text);}
+  .card .md h3{font-family:'Space Grotesk'; font-size:13.5px; color:var(--blue-deep); margin:10px 0 6px;}
+  .card .md ul{margin:6px 0 6px 18px;}
+  .kv-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:12px 0;}
+  .kv{background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px 12px;}
+  .kv .k{font-size:10.5px; color:var(--text-mute); margin-bottom:5px;}
+  .kv .v{font-family:'JetBrains Mono'; font-size:16px; font-weight:600; color:var(--text);}
+  .kv .v.warn{color:var(--amber);}
+  .kv .v.crit{color:var(--rose);}
+  table{width:100%; border-collapse:collapse; margin:10px 0 4px; font-size:12px;}
+  table th{text-align:left; color:var(--text-mute); font-weight:600; font-size:11px; padding:6px 8px; border-bottom:1px solid var(--border); font-family:'JetBrains Mono';}
+  table td{padding:7px 8px; border-bottom:1px solid var(--border); color:var(--text-dim); font-family:'JetBrains Mono'; font-size:12px;}
+  table tr:last-child td{border-bottom:none;}
+  table td.hl{color:var(--blue); font-weight:600;}
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; padding:3px 9px; border-radius:20px; font-family:'JetBrains Mono';}
+  .badge.weather{background:#FBF1E3; color:var(--amber); border:1px solid #EFD5AC;}
+  .badge.demo{background:#F1EEFB; color:var(--violet); border:1px solid #D9D2F5;}
+  .recommend{font-size:12px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); color:var(--text-dim); line-height:1.7;}
+  .recommend b{color:var(--text);}
+  .loading{display:flex; align-items:center; gap:8px; color:var(--text-mute); font-size:12px; font-family:'JetBrains Mono';}
+  .spin{width:12px; height:12px; border:2px solid var(--border); border-top-color:var(--blue); border-radius:50%; animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ===== Telemetry side ===== */
+  .side-block{margin-bottom:22px;}
+  .side-block:last-child{margin-bottom:0;}
+  .legend{display:flex; justify-content:space-between; font-size:10px; color:var(--text-mute); margin-top:8px; font-family:'JetBrains Mono';}
+  .top-list{display:flex; flex-direction:column; gap:9px;}
+  .top-row{display:grid; grid-template-columns:70px 1fr 60px; align-items:center; gap:10px; font-size:11.5px;}
+  .top-row .zid{font-family:'JetBrains Mono'; color:var(--text-dim);}
+  .top-row .bar-bg{height:7px; background:var(--panel-2); border-radius:4px; overflow:hidden; border:1px solid var(--border);}
+  .top-row .bar-fill{height:100%; border-radius:4px; background:linear-gradient(90deg, var(--rose), var(--amber));}
+  .top-row .val{font-family:'JetBrains Mono'; text-align:right; color:var(--text-dim);}
+  .mae-chart{display:flex; flex-direction:column; gap:10px; margin-top:6px;}
+  .mae-row{display:grid; grid-template-columns:88px 1fr 52px; align-items:center; gap:10px; font-size:11.5px;}
+  .mae-row .name{color:var(--text-dim); font-family:'Inter';}
+  .mae-row .bar-bg{height:8px; background:var(--panel-2); border-radius:4px; border:1px solid var(--border); overflow:hidden;}
+  .mae-row .bar-fill{height:100%; border-radius:4px;}
+  .mae-row .val{font-family:'JetBrains Mono'; text-align:right; color:var(--text-dim);}
+  footer{text-align:center; padding:18px 0 30px; font-size:11px; color:var(--text-mute);}
+  footer span{color:var(--text-dim);}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="corner tl"></span><span class="corner tr"></span>
+  <div class="brand">
+    <div class="brand-mark disp">交</div>
+    <div class="brand-text">
+      <h1>纽约城市智慧交通控制中心</h1>
+      <p>城市智慧交通分析专家 · Coze Agent 接入版</p>
+    </div>
+  </div>
+  <div class="status-bar">
+    <div class="status-item"><span class="dot"></span>覆盖分区 <b>265</b></div>
+    <div class="status-item"><span class="dot"></span>推荐模型 <b>DCRNN</b></div>
+    <div class="status-item"><span class="dot"></span>识别准确率 <b>92%</b></div>
+    <div class="status-item"><span class="dot"></span>响应时延 <b>2.8s</b></div>
+    <div id="clock" class="mono"></div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ============ LEFT: Query Console ============ -->
+  <div class="panel">
+    <h2>查询与决策面板 <span class="tag">TRAFFIC_CORE_WORKFLOW</span></h2>
+
+    <div class="conn-bar">
+      <div class="conn-status off" id="connStatus"><span class="led"></span><span id="connLabel">未连接 · 演示模式</span></div>
+      <input id="baseUrlInput" type="text" placeholder="后端地址，如 https://xxxx.cpolar.top（留空则使用演示数据）" />
+      <button id="connBtn">连接</button>
+    </div>
+
+    <div class="console-input">
+      <div class="prompt">
+        <span>&gt;</span>
+        <input id="queryInput" type="text" placeholder="输入查询，如「时代广场到中央公园怎么走」" />
+      </div>
+      <button id="sendBtn">发送</button>
+    </div>
+
+    <div class="chips">
+      <div class="chip" data-q="时代广场到中央公园怎么走">时代广场 → 中央公园</div>
+      <div class="chip" data-q="唐人街雨天拥堵情况">唐人街雨天拥堵</div>
+      <div class="chip" data-q="时代广场信号灯优化建议">时代广场信号灯优化</div>
+      <div class="chip" data-q="唐人街的热力图">唐人街热力图</div>
+      <div class="chip" data-q="对比四大模型预测效果">四大模型对比</div>
+      <div class="chip" data-q="你好">闲聊问候</div>
+    </div>
+
+    <div class="feed" id="feed"></div>
+  </div>
+
+  <!-- ============ RIGHT: Telemetry ============ -->
+  <div class="panel">
+    <h2>实时遥测面板 <span class="tag">LIVE</span></h2>
+
+    <div class="side-block" id="liveChartBlock" style="display:none;">
+      <p style="font-size:11.5px;color:var(--text-mute);margin-bottom:8px;">
+        当前可视化结果 <span id="liveChartLabel" style="color:var(--blue);"></span>
+      </p>
+      <div id="liveChartImgs"></div>
+    </div>
+
+    <div class="side-block" id="defaultHeatmapBlock">
+      <p style="font-size:11.5px;color:var(--text-mute);margin-bottom:8px;">局部关联热力图 · ID 45 <span class="badge demo" style="margin-left:4px;">默认示例</span></p>
+      <svg id="heatmap" width="100%" viewBox="0 0 240 240" style="display:block; border-radius:8px; overflow:hidden; border:1px solid var(--border);"></svg>
+      <div class="legend"><span>弱关联</span><span>强关联（自环=1.0）</span></div>
+    </div>
+
+    <div class="side-block">
+      <p style="font-size:11.5px;color:var(--text-mute);margin-bottom:10px;">Top 拥堵分区 · CI 排名</p>
+      <div class="top-list" id="topList"></div>
+    </div>
+
+    <div class="side-block">
+      <p style="font-size:11.5px;color:var(--text-mute);margin-bottom:10px;">四模型 MAE 对比 · 60min</p>
+      <div class="mae-chart" id="maeChart"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>数据来自项目真实实验记录（model_report.json / congestion_index.csv / od_matrix.csv）· 对话默认演示数据，填入后端地址后接入真实 Coze Agent · <span>城市智慧交通拥堵预测与分析 Agent</span></footer>
+
+<script>
+/* ============ 时钟 ============ */
+function tick(){
+  const d = new Date();
+  document.getElementById('clock').textContent = d.toLocaleDateString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}) + '  ' + d.toLocaleTimeString('zh-CN');
+}
+tick(); setInterval(tick, 1000);
+
+/* ============ 后端连接配置（只存 base URL，不存任何密钥） ============ */
+let BASE_URL = '';
+try{ BASE_URL = localStorage.getItem('traffic_agent_base_url') || ''; }catch(e){}
+const baseUrlInput = document.getElementById('baseUrlInput');
+const connStatusEl = document.getElementById('connStatus');
+const connLabelEl = document.getElementById('connLabel');
+baseUrlInput.value = BASE_URL;
+function setConnUI(connected){
+  connStatusEl.className = 'conn-status ' + (connected ? 'live' : 'off');
+  connLabelEl.textContent = connected ? ('已连接 · ' + BASE_URL) : '未连接 · 演示模式';
+}
+setConnUI(!!BASE_URL);
+document.getElementById('connBtn').addEventListener('click', ()=>{
+  BASE_URL = baseUrlInput.value.trim().replace(/\/$/, '');
+  try{ localStorage.setItem('traffic_agent_base_url', BASE_URL); }catch(e){}
+  setConnUI(!!BASE_URL);
+});
+
+/* ============ 真实数据（遥测面板，与对话是否接入无关，始终展示真实实验数据） ============ */
+const TOP_CI = [
+  {id:'237 上东区南', ci:933917.20},
+  {id:'236 上东区北', ci:819142.65},
+  {id:'161', ci:796264.46},
+  {id:'186', ci:670257.22},
+  {id:'142 林肯广场东', ci:600012.94},
+];
+const MAE_60 = [
+  {name:'Spatial-LSTM', v:0.542, color:'var(--text-mute)'},
+  {name:'ST-GCN', v:0.544, color:'var(--amber)'},
+  {name:'DCRNN', v:0.516, color:'var(--blue)'},
+  {name:'ASTGCN', v:0.521, color:'var(--violet)'},
+];
+const topListEl = document.getElementById('topList');
+const maxCI = Math.max(...TOP_CI.map(d=>d.ci));
+TOP_CI.forEach(d=>{
+  const row = document.createElement('div');
+  row.className = 'top-row';
+  const pct = (d.ci/maxCI*100).toFixed(0);
+  row.innerHTML = `<div class="zid">${d.id}</div><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div><div class="val">${(d.ci/1000).toFixed(1)}k</div>`;
+  topListEl.appendChild(row);
+});
+const maeEl = document.getElementById('maeChart');
+const maxMAE = Math.max(...MAE_60.map(d=>d.v));
+MAE_60.forEach(d=>{
+  const row = document.createElement('div');
+  row.className = 'mae-row';
+  const pct = (d.v/maxMAE*100).toFixed(0);
+  row.innerHTML = `<div class="name">${d.name}</div><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${d.color}"></div></div><div class="val">${d.v.toFixed(3)}</div>`;
+  maeEl.appendChild(row);
+});
+
+/* ============ 局部热力图（确定性伪随机，连续渐变） ============ */
+function seeded(seed){ let s = seed; return ()=>{ s = (s*9301+49297)%233280; return s/233280; }; }
+function colorForValue(v){
+  const stops = [[0.00,[255,247,213]],[0.35,[255,202,128]],[0.65,[237,113,70]],[1.00,[134,18,28]]];
+  let lo=stops[0], hi=stops[stops.length-1];
+  for(let k=0;k<stops.length-1;k++){ if(v>=stops[k][0]&&v<=stops[k+1][0]){lo=stops[k];hi=stops[k+1];break;} }
+  const t=(v-lo[0])/((hi[0]-lo[0])||1);
+  const r=Math.round(lo[1][0]+(hi[1][0]-lo[1][0])*t), g=Math.round(lo[1][1]+(hi[1][1]-lo[1][1])*t), b=Math.round(lo[1][2]+(hi[1][2]-lo[1][2])*t);
+  return `rgb(${r},${g},${b})`;
+}
+(function renderHeatmap(){
+  const N=12, cell=240/N, rand=seeded(45);
+  let html='';
+  for(let i=0;i<N;i++){ for(let j=0;j<N;j++){
+    let v;
+    if(i===j){ v=1.0; } else {
+      const dist=Math.abs(i-j);
+      v=Math.max(0, rand()*0.55*(1/(1+dist*0.35)) + (rand()<0.08?rand()*0.4:0));
+    }
+    html += `<rect x="${j*cell}" y="${i*cell}" width="${cell-1}" height="${cell-1}" fill="${colorForValue(v)}" rx="1.5"/>`;
+  }}
+  document.getElementById('heatmap').innerHTML = html;
+})();
+
+/* ============ 极简 Markdown 渲染（覆盖Agent模板常用的标题/粗体/表格/列表） ============ */
+function renderMarkdown(md){
+  if(!md) return '<p class="body">（空回复）</p>';
+  const lines = md.split('\n');
+  let html = '', inTable=false, tableRows=[], inList=false;
+  function flushTable(){
+    if(!tableRows.length) return;
+    let rows = tableRows.filter(r => !/^\s*\|?\s*-{2,}/.test(r));
+    let out = '<table>';
+    rows.forEach((r,idx)=>{
+      const cells = r.split('|').map(c=>c.trim()).filter((c,i,arr)=> !(i===0&&c==='') && !(i===arr.length-1&&c===''));
+      out += '<tr>' + cells.map(c=> idx===0 ? `<th>${escapeHtml(c)}</th>` : `<td>${escapeHtml(c)}</td>`).join('') + '</tr>';
+    });
+    out += '</table>';
+    html += out; tableRows=[]; inTable=false;
+  }
+  function flushList(){ if(inList){ html += '</ul>'; inList=false; } }
+  function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function inline(s){
+    s = escapeHtml(s);
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Markdown 图片语法 ![alt](url) -> 真正渲染成图片，而不是显示原始文字
+    s = s.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<img src="$2" alt="$1" loading="lazy" style="max-width:100%;border-radius:8px;margin:8px 0;display:block;border:1px solid var(--border)" onerror="this.outerHTML=\'<span style=&quot;color:var(--text-mute);font-size:11.5px&quot;>⚠ 图片加载失败：$2</span>\'">');
+    return s;
+  }
+  lines.forEach(line=>{
+    if(/^\s*\|.+\|\s*$/.test(line)){ inTable=true; tableRows.push(line); return; }
+    else if(inTable){ flushTable(); }
+    if(/^#{1,3}\s+/.test(line)){ flushList(); html += `<h3>${inline(line.replace(/^#{1,3}\s+/,''))}</h3>`; return; }
+    if(/^[-•]\s+/.test(line)){ if(!inList){ html+='<ul>'; inList=true; } html += `<li>${inline(line.replace(/^[-•]\s+/,''))}</li>`; return; }
+    else if(inList){ flushList(); }
+    if(line.trim()==='') { return; }
+    html += `<p>${inline(line)}</p>`;
+  });
+  flushTable(); flushList();
+  return `<div class="md">${html}</div>`;
+}
+
+/* ============ 演示模式：意图识别（关键词规则） ============ */
+function classify(q){
+  if(/信号灯|限行/.test(q)) return 'signal';
+  if(/热力|流向|时序|对比.*模型|模型.*对比|看板|大屏/.test(q)) return 'visual';
+  if(/从.+到.+|.+到.+(怎么走|路线|路径)/.test(q)) return 'route';
+  if(/拥堵|路况|怎么样|情况/.test(q)) return 'status';
+  return 'chat';
+}
+function hasWeather(q){ return /雨|雪|雾|暴雨|能见度/.test(q); }
+
+function demoCard(q){
+  const intent = classify(q);
+  if(intent==='route') return {type:'route', title:'OD 通勤走廊宏观路径时空分析报告', sub:'起点：时代广场 → 终点：中央公园 · 推荐模型 ST-GCN', html:`
+    <div class="kv-grid">
+      <div class="kv"><div class="k">数据基准时间</div><div class="v" style="font-size:13px">2026-02-01 00:45</div></div>
+      <div class="kv"><div class="k">数据状态</div><div class="v" style="font-size:13px;color:var(--blue)">success</div></div>
+    </div>
+    <p class="body" style="margin-bottom:6px;">备选通勤干线拓扑规划：</p>
+    <table>
+      <tr><th>路线</th><th>综合成本系数</th><th>途经完整走廊</th></tr>
+      <tr><td>路线 1</td><td class="hl">1.0</td><td>时代广场/剧院区 ➔ 中央公园</td></tr>
+      <tr><td>路线 2</td><td>2.0</td><td>时代广场/剧院区 ➔ 炮台公园城 ➔ 中央公园</td></tr>
+      <tr><td>路线 3</td><td>2.0</td><td>时代广场/剧院区 ➔ Bloomingdale ➔ 中央公园</td></tr>
+    </table>
+    <div class="recommend">💡 多条路线成本接近时，优先选择配备自适应信号控制的走廊以获取绿波通行。</div>`};
+  if(intent==='status') return {type:'status', title:'片区实时车流监测与多模型预测报告', sub:'监测点位：唐人街 · 推荐模型 DCRNN', html:`
+    ${hasWeather(q)?'<span class="badge weather">⛈ 气象联动已触发 · 雨天权重修正</span><br><br>':''}
+    <table>
+      <tr><th>预测模型</th><th>15min MAE</th><th>30min MAE</th></tr>
+      <tr><td>ST-GCN</td><td>0.5178</td><td>0.6061</td></tr>
+      <tr><td class="hl">DCRNN</td><td class="hl">0.5057</td><td class="hl">0.5152</td></tr>
+      <tr><td>ASTGCN</td><td>0.5276</td><td>0.5269</td></tr>
+      <tr><td>Spatial-LSTM</td><td>0.5179</td><td>0.5252</td></tr>
+    </table>
+    <div class="recommend">💡 建议结合峰值流量与最优模型（DCRNN）给出的预测结果，评估是否绕行或错峰出行。</div>`};
+  if(intent==='signal') return {type:'signal', title:'关键交叉口自适应信号灯配时与限行管控分析报告', sub:'目标管控片区：时代广场 · 环境运行模式：常规', html:`
+    <div class="kv-grid">
+      <div class="kv"><div class="k">CI 历史拥堵指数</div><div class="v warn">0.4985</div></div>
+      <div class="kv"><div class="k">SPI 动态路网压力指数</div><div class="v">0.0749</div></div>
+      <div class="kv"><div class="k">未来时段预测流量</div><div class="v">0.1624</div></div>
+      <div class="kv"><div class="k">OD 出行强度</div><div class="v crit">0.9999</div></div>
+      <div class="kv"><div class="k">综合拥堵管控评分</div><div class="v" style="color:var(--blue)">0.329</div></div>
+    </div>
+    <div class="recommend"><b>信号灯配时优化方案：</b>绿灯时长 +10%<br><b>区域限行管控政策：</b>建议高峰时段分流，优化路径引导</div>`};
+  if(intent==='visual') return {type:'visual', title:'GIS 交通可视化看板渲染完成', sub:'图表类型：'+(/模型/.test(q)?'model_compare':'heatmap · 唐人街片区'), html:`
+    <p class="body">看板已完成渲染，算力部署正常。${/模型/.test(q) ? 'DCRNN 在四个预测步长上全部取得最低 MAE，相比基线降低约 15%，最终作为系统推荐模型。' : '拥堵热点主要集中于唐人街核心商业区及主干道路口，关联强度呈连续渐变，对角线为自环强制值 1.0，详见右侧热力图面板。'}</p>`};
+  return {type:'chat', title:'城市交通分析专家', sub:'闲聊兜底分支', html:
+    `<p class="body">您好，这里是纽约智慧交通控制中心。请输入您关心的通勤走廊（如阿斯托利亚公园、时代广场），我将为您调取四大时空预测模型实时拥堵预测与自适应信号灯优化方案。</p>`};
+}
+
+/* ============ 真实接入：调用后端 /coze/chat ============ */
+let cozeUserId = null;
+try{ cozeUserId = localStorage.getItem('traffic_agent_user_id'); }catch(e){}
+if(!cozeUserId){ cozeUserId = 'web-' + Math.random().toString(36).slice(2,10); try{ localStorage.setItem('traffic_agent_user_id', cozeUserId); }catch(e){} }
+
+async function realQuery(q){
+  const resp = await fetch(BASE_URL + '/coze/chat', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({message:q, user_id:cozeUserId}),
+  });
+  if(!resp.ok){
+    let detail = resp.statusText;
+    try{ const j = await resp.json(); detail = j.detail || detail; }catch(e){}
+    throw new Error(detail);
+  }
+  return resp.json();
+}
+
+/* ============ 发送与渲染流程 ============ */
+const feed = document.getElementById('feed');
+function pushUser(q){
+  const el = document.createElement('div');
+  el.className = 'msg-user mono';
+  el.textContent = q;
+  feed.appendChild(el);
+  feed.scrollTop = feed.scrollHeight;
+}
+function pushCard(c){
+  const el = document.createElement('div');
+  el.className = 'card t-' + c.type;
+  el.innerHTML = `<div class="card-title">${iconFor(c.type)} ${c.title}</div><div class="card-sub">${c.sub}</div>${c.html}`;
+  feed.appendChild(el);
+  feed.scrollTop = feed.scrollHeight;
+  return el;
+}
+function iconFor(t){
+  return {chat:'💬', route:'🗺️', status:'📍', signal:'🚦', visual:'🖥️', live:'✅', error:'⚠️'}[t] || '•';
+}
+async function handleQuery(q){
+  if(!q.trim()) return;
+  pushUser(q);
+
+  if(!BASE_URL){
+    const c = demoCard(q);
+    c.sub += '　·　<span class="badge demo">演示数据</span>';
+    setTimeout(()=>pushCard(c), 280);
+    return;
+  }
+
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'card t-chat';
+  loadingEl.innerHTML = `<div class="loading"><div class="spin"></div>正在请求 Coze Agent…</div>`;
+  feed.appendChild(loadingEl);
+  feed.scrollTop = feed.scrollHeight;
+
+  try{
+    const data = await realQuery(q);
+    loadingEl.remove();
+    pushCard({type:'live', title:'城市智慧交通分析专家', sub:'实时回复 · conversation_id: ' + (data.conversation_id||'').slice(0,12), html: renderMarkdown(data.reply)});
+    updateLiveChart(data.reply);
+  }catch(err){
+    loadingEl.remove();
+    pushCard({type:'error', title:'请求失败', sub:'后端地址: ' + BASE_URL, html:
+      `<p class="body">${err.message}</p><p class="body" style="font-size:11.5px;color:var(--text-mute)">检查：① cpolar 隧道是否仍在运行且地址未变化；② api.py 是否已配置 COZE_PAT_TOKEN / COZE_BOT_ID 环境变量并重启；③ 是否已添加 CORS 中间件。</p>`});
+  }
+}
+
+/* ============ 从Agent真实回复里提取图片，更新右侧遥测面板"当前可视化结果" ============ */
+function extractImages(md){
+  if(!md) return [];
+  const re = /!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g;
+  const out = [];
+  let m;
+  while((m = re.exec(md)) !== null){ out.push({alt: m[1], url: m[2]}); }
+  return out;
+}
+function updateLiveChart(replyText){
+  const images = extractImages(replyText);
+  const block = document.getElementById('liveChartBlock');
+  const labelEl = document.getElementById('liveChartLabel');
+  const imgsEl = document.getElementById('liveChartImgs');
+  if(!images.length){
+    // 这次回复不是可视化类型（没有图片），保持面板上一次的状态不变，不强行隐藏，
+    // 避免用户刚问完热力图、紧接着问一句路况，图就突然消失。
+    return;
+  }
+  labelEl.textContent = images[0].alt || '';
+  imgsEl.innerHTML = images.map(img =>
+    `<img src="${img.url}" alt="${img.alt}" loading="lazy"
+      style="width:100%;border-radius:8px;border:1px solid var(--border);margin-bottom:8px;display:block;"
+      onerror="this.outerHTML='<div style=&quot;font-size:11.5px;color:var(--rose);padding:10px;background:#FBEEF0;border-radius:8px;&quot;>⚠ 图片加载失败，检查 cpolar 隧道与 /static 目录：${img.url}</div>'">`
+  ).join('');
+  block.style.display = 'block';
+  // 真实图表已经出现，默认示例热力图不再需要占位，隐藏它
+  const defaultBlock = document.getElementById('defaultHeatmapBlock');
+  if(defaultBlock) defaultBlock.style.display = 'none';
+}
+
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('queryInput');
+  handleQuery(input.value);
+  input.value = '';
+});
+document.getElementById('queryInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){ handleQuery(e.target.value); e.target.value=''; }
+});
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=> handleQuery(chip.dataset.q));
+});
+
+/* 初始欢迎卡片 */
+pushCard(demoCard('你好'));
+</script>
+</body>
+</html>
