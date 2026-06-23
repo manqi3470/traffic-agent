@@ -34,6 +34,7 @@
   }
   .mono{font-family:'JetBrains Mono', monospace;}
   .disp{font-family:'Space Grotesk', sans-serif;}
+
   /* ===== Header ===== */
   header{
     display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
@@ -278,7 +279,7 @@ function tick(){
 tick(); setInterval(tick, 1000);
 
 /* ============ 后端连接配置（只存 base URL，不存任何密钥） ============ */
-let BASE_URL = '';
+let BASE_URL = 'http://19f2e952.r6.cpolar.cn';
 try{ BASE_URL = localStorage.getItem('traffic_agent_base_url') || ''; }catch(e){}
 const baseUrlInput = document.getElementById('baseUrlInput');
 const connStatusEl = document.getElementById('connStatus');
